@@ -125,7 +125,7 @@ def add_conv_layer(input, filter_size, layer_width):
     filter = tf.Variable(tf.truncated_normal(filter_size, mean=mu, stddev=sigma))
     bias = tf.Variable(tf.zeros(layer_width))
     conv = tf.nn.conv2d(input, filter, [1, 1, 1, 1], "VALID") + bias
-    conv = tf.nn.elu(conv)
+    conv = tf.nn.relu(conv)
     conv = tf.nn.max_pool(conv, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
     return conv
@@ -143,7 +143,7 @@ def model(x):
     fc1_b = tf.Variable(tf.zeros(layer_width['fully_connected_1']))
 
     fc_1 = tf.matmul(flatten, fc1_W) + fc1_b
-    fc_1 = tf.nn.elu(fc_1)
+    fc_1 = tf.nn.relu(fc_1)
 
     logits_W = tf.Variable(tf.truncated_normal((layer_width['fully_connected_1'], n_classes), mean=mu, stddev=sigma))
     logits_b = tf.Variable(tf.zeros(n_classes))
@@ -161,7 +161,7 @@ one_hot_y = tf.one_hot(y, n_classes)
 logits = model(x)
 
 cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=one_hot_y))
-optimizer = tf.train.AdadeltaOptimizer(learning_rate=rate).minimize(cost)
+optimizer = tf.train.AdamOptimizer(learning_rate=rate).minimize(cost)
 
 correct_prediction = tf.equal(tf.argmax(logits, 1), tf.argmax(one_hot_y, 1))
 accuracy_operation = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
